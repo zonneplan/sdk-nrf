@@ -63,7 +63,7 @@ static int socket_timeout_set(int fd)
 	return 0;
 }
 
-static int socket_sectag_set(int fd, int sec_tag)
+static int socket_sectag_set(int fd, int sec_tag, const char *host)
 {
 	int err;
 	int verify;
@@ -88,6 +88,12 @@ static int socket_sectag_set(int fd, int sec_tag)
 	if (err) {
 		LOG_ERR("Failed to setup socket security tag, errno %d", errno);
 		return -1;
+	}
+
+	err = setsockopt(fd, SOL_TLS, TLS_HOSTNAME, host, strlen(host) + 1);
+	if (err) {
+		LOG_ERR("Failed to set host name, errno %d\n", errno);
+		return err;
 	}
 
 	return 0;
@@ -182,7 +188,7 @@ static int resolve_and_connect(int family, const char *host,
 
 	if (proto == IPPROTO_TLS_1_2) {
 		LOG_INF("Setting up TLS credentials");
-		err = socket_sectag_set(fd, cfg->sec_tag);
+		err = socket_sectag_set(fd, cfg->sec_tag, host);
 		if (err) {
 			goto cleanup;
 		}
