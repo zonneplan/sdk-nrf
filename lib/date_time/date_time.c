@@ -45,7 +45,7 @@ static struct k_delayed_work time_work;
 
 static struct time_aux {
 	s64_t date_time_utc;
-	int last_date_time_update;
+	s64_t last_date_time_update;
 } time_aux;
 
 static struct sntp_time sntp_time;
@@ -282,7 +282,10 @@ int date_time_uptime_to_unix_time_ms(s64_t *uptime)
 		return -ENODATA;
 	}
 
+	//s64_t real_uptime = *uptime;
 	*uptime += time_aux.date_time_utc - time_aux.last_date_time_update;
+
+	//printf("Time %lld [%lld + %lld - %lld]\n", *uptime, real_uptime, time_aux.date_time_utc, time_aux.last_date_time_update);
 
 	return 0;
 }
