@@ -64,6 +64,9 @@ config PM_EXTERNAL_FLASH_BASE
 	hex "External flash base address"
 	default 0
 
+config PM_EXTERNAL_FLASH_LITTLEFS
+	bool "Use littlefs on external flash"
+
 endif
 
 endmenu # Partition Manager
