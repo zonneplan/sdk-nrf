@@ -24,7 +24,8 @@ enum dfu_target_image_type {
 	DFU_TARGET_IMAGE_TYPE_ANY = 0,
 	DFU_TARGET_IMAGE_TYPE_MCUBOOT = 1,
 	DFU_TARGET_IMAGE_TYPE_MODEM_DELTA,
-	DFU_TARGET_IMAGE_TYPE_FULL_MODEM
+	DFU_TARGET_IMAGE_TYPE_FULL_MODEM,
+	DFU_TARGET_IMAGE_TYPE_APPLICATION
 };
 
 enum dfu_target_evt_id {
@@ -41,6 +42,7 @@ struct dfu_target {
 	int (*offset_get)(size_t *offset);
 	int (*write)(const void *const buf, size_t len);
 	int (*done)(bool successful);
+	bool (*identify)(const void *const buf);
 };
 
 /**

@@ -81,6 +81,9 @@ config DFU_TARGET_FULL_MODEM
 	  Enable support for full updates to the modem firmware.
 	  Note that this requires an external flash.
 
+config DFU_TARGET_APPLICATION
+	bool "Custom application controlled update support"
+
 module=DFU_TARGET
 module-dep=LOG
 module-str=Device Firmware Upgrade
