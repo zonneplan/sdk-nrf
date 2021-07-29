@@ -13,6 +13,7 @@ static const struct dfu_target dfu_target_ ## name  = { \
 	.init = dfu_target_ ## name ## _init, \
 	.offset_get = dfu_target_## name ##_offset_get, \
 	.write = dfu_target_ ## name ## _write, \
+	.identify = dfu_target_ ## name ## _identify, \
 	.done = dfu_target_ ## name ## _done, \
 }
 
@@ -28,33 +29,54 @@ DEF_DFU_TARGET(mcuboot);
 #include "dfu/dfu_target_full_modem.h"
 DEF_DFU_TARGET(full_modem);
 #endif
+#ifdef CONFIG_DFU_TARGET_APPLICATION
+#include "dfu/dfu_target_application.h"
+DEF_DFU_TARGET(application);
+#endif
 
 #define MIN_SIZE_IDENTIFY_BUF 32
 
 LOG_MODULE_REGISTER(dfu_target, CONFIG_DFU_TARGET_LOG_LEVEL);
 
 static const struct dfu_target *current_target;
+static struct {
+	int img_type;
+	struct dfu_target target;
+} dfu_targets[] = {
+#ifdef CONFIG_DFU_TARGET_MCUBOOT
+    {DFU_TARGET_IMAGE_TYPE_MCUBOOT, dfu_target_mcuboot},
+#endif
+#ifdef CONFIG_DFU_TARGET_MODEM_DELTA
+    {DFU_TARGET_IMAGE_TYPE_MODEM_DELTA, dfu_target_modem_delta},
+#endif
+#ifdef CONFIG_DFU_TARGET_FULL_MODEM
+    {DFU_TARGET_IMAGE_TYPE_FULL_MODEM, dfu_target_full_modem},
+#endif
+#ifdef CONFIG_DFU_TARGET_APPLICATION
+    {DFU_TARGET_IMAGE_TYPE_APPLICATION, dfu_target_application},
+#endif
+};
 
 int dfu_target_img_type(const void *const buf, size_t len)
 {
+	int matched = -1;
+	for (int i=0; i<ARRAY_SIZE(dfu_targets); i++) {
+		if (dfu_targets[i].target.identify(buf)) {
+			if (matched == -1) {
+				matched = i;
+			}
+			else {
+				LOG_ERR("Multiple matches for image type");
+				return -EINVAL; //ambiguous;
+			}
+		}
+	}
+	if (matched != -1) {
+		return dfu_targets[matched].img_type;
+	}
 	if (len < MIN_SIZE_IDENTIFY_BUF) {
 		return -EAGAIN;
 	}
-#ifdef CONFIG_DFU_TARGET_MCUBOOT
-	if (dfu_target_mcuboot_identify(buf)) {
-		return DFU_TARGET_IMAGE_TYPE_MCUBOOT;
-	}
-#endif
-#ifdef CONFIG_DFU_TARGET_MODEM_DELTA
-	if (dfu_target_modem_delta_identify(buf)) {
-		return DFU_TARGET_IMAGE_TYPE_MODEM_DELTA;
-	}
-#endif
-#ifdef CONFIG_DFU_TARGET_FULL_MODEM
-	if (dfu_target_full_modem_identify(buf)) {
-		return DFU_TARGET_IMAGE_TYPE_FULL_MODEM;
-	}
-#endif
 	LOG_ERR("No supported image type found");
 	return -ENOTSUP;
 }
@@ -63,21 +85,12 @@ int dfu_target_init(int img_type, size_t file_size, dfu_target_callback_t cb)
 {
 	const struct dfu_target *new_target = NULL;
 
-#ifdef CONFIG_DFU_TARGET_MCUBOOT
-	if (img_type == DFU_TARGET_IMAGE_TYPE_MCUBOOT) {
-		new_target = &dfu_target_mcuboot;
+	for (int i=0; i<ARRAY_SIZE(dfu_targets); i++) {
+		if (dfu_targets[i].img_type == img_type) {
+			new_target = &dfu_targets[i].target;
+		}
 	}
-#endif
-#ifdef CONFIG_DFU_TARGET_MODEM_DELTA
-	if (img_type == DFU_TARGET_IMAGE_TYPE_MODEM_DELTA) {
-		new_target = &dfu_target_modem_delta;
-	}
-#endif
-#ifdef CONFIG_DFU_TARGET_FULL_MODEM
-	if (img_type == DFU_TARGET_IMAGE_TYPE_FULL_MODEM) {
-		new_target = &dfu_target_full_modem;
-	}
-#endif
+
 	if (new_target == NULL) {
 		LOG_ERR("Unknown image type");
 		return -ENOTSUP;
