@@ -22,6 +22,7 @@ extern "C" {
 
 #define DFU_TARGET_IMAGE_TYPE_MCUBOOT 1
 #define DFU_TARGET_IMAGE_TYPE_MODEM_DELTA 2
+#define DFU_TARGET_IMAGE_TYPE_APPLICATION 3
 
 enum dfu_target_evt_id {
 	DFU_TARGET_EVT_TIMEOUT,
@@ -37,6 +38,7 @@ struct dfu_target {
 	int (*offset_get)(size_t *offset);
 	int (*write)(const void *const buf, size_t len);
 	int (*done)(bool successful);
+	bool (*identify)(const void *const buf);
 };
 
 /**

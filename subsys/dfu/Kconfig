@@ -54,6 +54,10 @@ config DFU_TARGET_MODEM_TIMEOUT
 
 endif # DFU_TARGET_MODEM
 
+config DFU_TARGET_APPLICATION
+	bool "Custom application controlled update support"
+
+
 module=DFU_TARGET
 module-dep=LOG
 module-str=Device Firmware Upgrade
