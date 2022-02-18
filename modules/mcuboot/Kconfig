@@ -1,5 +1,11 @@
 menu "MCUboot"
 
+config USE_NRF_MCUBOOT
+	bool "NRF version of mcuboot"
+	default y if MCUBOOT
+
+if USE_NRF_MCUBOOT
+
 config BOOT_SIGNATURE_KEY_FILE
 	string "MCUBoot PEM key file"
 	depends on !MCUBOOT_BUILD_STRATEGY_FROM_SOURCE
@@ -11,6 +17,8 @@ config BOOT_SIGNATURE_KEY_FILE
 	  what key was used when compiling it. Hence, it is required that the
 	  key is passed to the build system through this option.
 
+if BOOTLOADER_MCUBOOT
+
 config SIGN_IMAGES
 	bool "Sign images for MCUBoot"
 	default y
@@ -20,8 +28,6 @@ config SIGN_IMAGES
 	help
 	  Sign images for MCUBoot as integrated part of the build stages using
 	  the private key.
-
-if BOOTLOADER_MCUBOOT
 
 # The name of this configuration needs to match the requirements set by the
 # script `partition_manager.py`. See `pm.yml` in the application directory
@@ -59,4 +65,5 @@ config MCUBOOT_USB_SUPPORT
 	bool
 	default y if "$(dt_nodelabel_enabled,zephyr_udc0)"
 
+endif # USE_NRF_MCUBOOT
 endmenu
