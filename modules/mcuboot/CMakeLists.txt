@@ -1,3 +1,5 @@
+if(CONFIG_USE_NRF_MCUBOOT)
+
 add_subdirectory(${ZEPHYR_MCUBOOT_MODULE_DIR}/boot/bootutil/zephyr
                  ${CMAKE_CURRENT_BINARY_DIR}/boot/bootutil/zephyr
 )
@@ -519,3 +521,4 @@ endif()
 # NCS Handles everything regarding mcuboot, ensure Zephyr doesn't interfere.
 # This is a temporary solution until Zephyr signing has been made more modular.
 set(CONFIG_BOOTLOADER_MCUBOOT False PARENT_SCOPE)
+endif() #CONFIG_USE_NRF_MCUBOOT
