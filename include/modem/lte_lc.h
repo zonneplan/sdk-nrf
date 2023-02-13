@@ -637,7 +637,7 @@ struct lte_lc_periodic_search_pattern {
 	union {
 		/** Configuration for periodic search of type LTE_LC_PERIODIC_SEARCH_PATTERN_RANGE.
 		 */
-		struct lte_lc_periodic_search_range_cfg {
+		struct /* lte_lc_periodic_search_range_cfg */ {
 			/** Sleep time in seconds between searches in the beginning of the range.
 			 *  Allowed values: 0 - 65535 seconds.
 			 */
@@ -686,7 +686,7 @@ struct lte_lc_periodic_search_pattern {
 		 *  -1: Value unused.
 		 *   0 - 65535 seconds.
 		 */
-		struct lte_lc_periodic_search_table_cfg {
+		struct /* lte_lc_periodic_search_table_cfg */ {
 			/** Mandatory when LTE_LC_PERIODIC_SEARCH_PATTERN_TABLE is used. */
 			int val_1;
 
