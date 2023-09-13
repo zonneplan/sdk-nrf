@@ -39,6 +39,8 @@ manifest:
       url-base: https://github.com/BabbleSim
     - name: bosch
       url-base: https://github.com/boschsensortec
+    - name: zonneplan
+      url-base: git@github.com:zonneplan
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -62,6 +64,7 @@ manifest:
     - name: zephyr
       repo-path: sdk-zephyr
       revision: 83980fe1679441be9b0e1db556a353f6118fe14f
+      remote: zonneplan
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -142,6 +145,7 @@ manifest:
       repo-path: sdk-nrfxlib
       path: nrfxlib
       revision: v2.5.1-rc1
+      remote: zonneplan
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
