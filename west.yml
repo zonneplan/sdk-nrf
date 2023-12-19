@@ -63,7 +63,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr
-      revision: 83980fe1679441be9b0e1db556a353f6118fe14f
+      revision: zp/v3.4.99-ncs1-branch-sntp
       remote: zonneplan
       import:
         # In addition to the zephyr repository itself, NCS also
