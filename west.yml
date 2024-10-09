@@ -41,6 +41,8 @@ manifest:
       url-base: https://github.com/boschsensortec
     - name: eembc
       url-base: https://github.com/eembc
+    - name: zonneplan
+      url-base: git@github.com:zonneplan
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -150,9 +152,10 @@ manifest:
       path: nrfxlib
       revision: 43090511310ba72cff82effa29d155d8b40d3b90
     - name: trusted-firmware-m
+      remote: zonneplan
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
-      revision: v2.0.0-ncs2
+      revision: v2.0.0-ncs2-custom_tfm
     - name: psa-arch-tests
       repo-path: sdk-psa-arch-tests
       path: modules/tee/tf-m/psa-arch-tests
