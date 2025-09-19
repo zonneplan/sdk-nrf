@@ -59,15 +59,24 @@ struct mqtt_helper_buf {
  */
 typedef bool (*mqtt_helper_on_all_events_t)(struct mqtt_client *const client,
 					    const struct mqtt_evt *const event);
+#if CONFIG_MQTT_VERSION_5_0
+typedef void (*mqtt_helper_on_connack_t)(enum mqtt_connack_reason_code return_code,
+					 bool session_present,
+					 const struct mqtt_connack_param *params);
+typedef void (*mqtt_helper_on_disconnect_t)(int result,
+					    const struct mqtt_disconnect_param *disconnect);
+#else
 typedef void (*mqtt_helper_on_connack_t)(enum mqtt_conn_return_code return_code,
 					 bool session_present);
 typedef void (*mqtt_helper_on_disconnect_t)(int result);
+#endif
 typedef void (*mqtt_helper_on_publish_t)(struct mqtt_helper_buf topic_buf,
 					 struct mqtt_helper_buf payload_buf);
 typedef void (*mqtt_helper_on_puback_t)(uint16_t message_id, int result);
 typedef void (*mqtt_helper_on_suback_t)(uint16_t message_id, int result);
 typedef void (*mqtt_helper_on_pingresp_t)(void);
 typedef void (*mqtt_helper_on_error_t)(enum mqtt_helper_error error);
+typedef void (*mqtt_helper_on_auth_t)(const struct mqtt_auth_param *auth);
 
 struct mqtt_helper_cfg {
 	struct {
@@ -79,6 +88,7 @@ struct mqtt_helper_cfg {
 		mqtt_helper_on_suback_t on_suback;
 		mqtt_helper_on_pingresp_t on_pingresp;
 		mqtt_helper_on_error_t on_error;
+		mqtt_helper_on_auth_t on_auth;
 	} cb;
 
 #if defined(CONFIG_MQTT_LIB_TLS)
@@ -93,7 +103,9 @@ struct mqtt_helper_conn_params {
 	struct mqtt_helper_buf device_id;
 	struct mqtt_helper_buf user_name;
 	struct mqtt_helper_buf password;
-
+#ifdef CONFIG_MQTT_VERSION_5_0
+	uint8_t protocol_version;
+#endif
 	/** Name of the interface that the MQTT helper should be bound to.
 	 *  Leave as NULL if not specified.
 	 */
@@ -107,7 +119,6 @@ struct mqtt_helper_conn_params {
  *  @return Otherwise a negative error code.
  */
 int mqtt_helper_init(struct mqtt_helper_cfg *cfg);
-
 
 /** @brief Connect to an MQTT broker.
  *
@@ -160,7 +171,6 @@ uint16_t mqtt_helper_msg_id_get(void);
  *  @return Otherwise a negative error code.
  */
 int mqtt_helper_deinit(void);
-
 
 #ifdef __cplusplus
 }

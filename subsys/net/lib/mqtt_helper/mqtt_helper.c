@@ -181,7 +181,7 @@ static int certificates_provision(void)
 		if (err == -EEXIST) {
 			LOG_DBG("Public certificate already exists, sec tag: %d",
 				CONFIG_MQTT_HELPER_SEC_TAG);
-		} else  if (err < 0) {
+		} else if (err < 0) {
 			LOG_ERR("Failed to register public certificate: %d", err);
 			return err;
 		}
@@ -323,8 +323,14 @@ MQTT_HELPER_STATIC void mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 		}
 
 		if (current_cfg.cb.on_connack) {
+#ifdef CONFIG_MQTT_VERSION_5_0
+			current_cfg.cb.on_connack(mqtt_evt->param.connack.return_code,
+						  mqtt_evt->param.connack.session_present_flag,
+						  &mqtt_evt->param.connack);
+#else
 			current_cfg.cb.on_connack(mqtt_evt->param.connack.return_code,
 						  mqtt_evt->param.connack.session_present_flag);
+#endif
 		}
 		break;
 	case MQTT_EVT_DISCONNECT:
@@ -333,7 +339,11 @@ MQTT_HELPER_STATIC void mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 		mqtt_state_set(MQTT_STATE_DISCONNECTED);
 
 		if (current_cfg.cb.on_disconnect) {
+#if CONFIG_MQTT_VERSION_5_0
+			current_cfg.cb.on_disconnect(mqtt_evt->result, &mqtt_evt->param.disconnect);
+#else
 			current_cfg.cb.on_disconnect(mqtt_evt->result);
+#endif
 		}
 		break;
 	case MQTT_EVT_PUBLISH:
@@ -369,6 +379,15 @@ MQTT_HELPER_STATIC void mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 			current_cfg.cb.on_pingresp();
 		}
 		break;
+#ifdef CONFIG_MQTT_VERSION_5_0
+	case MQTT_EVT_AUTH:
+		LOG_DBG("MQTT_EVT_AUTH");
+
+		if (current_cfg.cb.on_auth) {
+			current_cfg.cb.on_auth(&mqtt_evt->param.auth);
+		}
+		break;
+#endif
 	default:
 		break;
 	}
@@ -461,7 +480,11 @@ static int client_connect(struct mqtt_helper_conn_params *conn_params)
 	mqtt_client.evt_cb	        = mqtt_evt_handler;
 	mqtt_client.client_id.utf8      = conn_params->device_id.ptr;
 	mqtt_client.client_id.size      = conn_params->device_id.size;
-	mqtt_client.protocol_version    = MQTT_VERSION_3_1_1;
+#if CONFIG_MQTT_VERSION_5_0
+	mqtt_client.protocol_version = conn_params->protocol_version;
+#else
+	mqtt_client.protocol_version = MQTT_VERSION_3_1_1;
+#endif
 	mqtt_client.rx_buf	        = rx_buffer;
 	mqtt_client.rx_buf_size	        = sizeof(rx_buffer);
 	mqtt_client.tx_buf	        = tx_buffer;
@@ -638,7 +661,14 @@ int mqtt_helper_disconnect(void)
 		mqtt_state_set(MQTT_STATE_DISCONNECTED);
 
 		if (current_cfg.cb.on_disconnect) {
+			#ifdef CONFIG_MQTT_VERSION_5_0
+			struct mqtt_disconnect_param reason = {
+				.reason_code = MQTT_DISCONNECT_UNSPECIFIED_ERROR,
+			};
+			current_cfg.cb.on_disconnect(err, &reason);
+			#else
 			current_cfg.cb.on_disconnect(err);
+			#endif
 		}
 	}
 
